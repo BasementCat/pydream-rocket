@@ -24,6 +24,8 @@ class Rocket(object):
     def __init__(self):
         self.device = None
         self.device_type = None
+        self.x = None
+        self.y = None
 
         # Tested only with the Cheeky Dream Thunder
         # and original USB Launcher
@@ -69,6 +71,20 @@ class Rocket(object):
         time.sleep(duration)
         self.raw_command(self.COMMANDS['STOP'])
 
+    def move_to(self, x, y):
+        if x > self.x:
+            self.move('RIGHT', self.MAX_ROTATION_DURATION * (x - self.x))
+        elif x < self.x:
+            self.move('LEFT', self.MAX_ROTATION_DURATION * (self.x - x))
+
+        if y > self.y:
+            self.move('UP', self.MAX_ROTATION_DURATION * (y - self.y))
+        elif y < self.y:
+            self.move('DOWN', self.MAX_ROTATION_DURATION * (self.y - y))
+
+        self.x = x
+        self.y = y
+
     def fire(self, count, led=True):
         if led:
             self.led(True)
@@ -85,9 +101,16 @@ class Rocket(object):
     def park(self):
         self.move('DOWN', self.MAX_PITCH_DURATION * 1.2)
         self.move('LEFT', self.MAX_ROTATION_DURATION * 1.2)
+        self.x = 0
+        self.y = 0
 
 
 if __name__ == '__main__':
     r = Rocket()
-    r.move('UP', 0.5)
-    r.move('RIGHT', 2.75)
+    r.move_to(0.5, 0)
+    time.sleep(0.5)
+    r.move_to(0.75, 1)
+    time.sleep(0.5)
+    r.move_to(1, 0.25)
+    time.sleep(0.5)
+    r.move_to(0.25, 0.75)
