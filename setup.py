@@ -27,7 +27,7 @@ setup(
     author_email='alec.elton@gmail.com',
     license='',
     packages=['pydream_rocket'],
-    install_requires=['pyusb'],
+    install_requires=['pyusb', 'bottle'],
     test_suite='nose.collector',
     tests_require=['nose'],
     zip_safe=False

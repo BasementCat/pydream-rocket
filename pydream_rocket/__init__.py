@@ -103,14 +103,3 @@ class Rocket(object):
         self.move('LEFT', self.MAX_ROTATION_DURATION * 1.2)
         self.x = 0
         self.y = 0
-
-
-if __name__ == '__main__':
-    r = Rocket()
-    r.move_to(0.5, 0)
-    time.sleep(0.5)
-    r.move_to(0.75, 1)
-    time.sleep(0.5)
-    r.move_to(1, 0.25)
-    time.sleep(0.5)
-    r.move_to(0.25, 0.75)
