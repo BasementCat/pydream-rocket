@@ -78,9 +78,9 @@ class Rocket(object):
             self.move('LEFT', self.MAX_ROTATION_DURATION * (self.x - x))
 
         if y > self.y:
-            self.move('UP', self.MAX_ROTATION_DURATION * (y - self.y))
+            self.move('UP', self.MAX_PITCH_DURATION * (y - self.y))
         elif y < self.y:
-            self.move('DOWN', self.MAX_ROTATION_DURATION * (self.y - y))
+            self.move('DOWN', self.MAX_PITCH_DURATION * (self.y - y))
 
         self.x = x
         self.y = y
