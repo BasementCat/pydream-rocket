@@ -70,12 +70,15 @@ class Rocket(object):
 
         self.park()
 
+    @property
     def max_rotation_duration(self):
         return self.calibrate_x or self.MAX_ROTATION_DURATION[self.device_type]
 
+    @property
     def max_pitch_duration(self):
         return self.calibrate_y or self.MAX_PITCH_DURATION[self.device_type]
 
+    @property
     def max_shots(self):
         return self.MAX_SHOTS[self.device_type]
 
@@ -110,14 +113,14 @@ class Rocket(object):
 
     def move_to(self, x, y):
         if x > self.x:
-            self.move('RIGHT', self.max_rotation_duration() * self.constrain_right(x - self.x))
+            self.move('RIGHT', self.max_rotation_duration * self.constrain_right(x - self.x))
         elif x < self.x:
-            self.move('LEFT', self.max_rotation_duration() * self.constrain_left(self.x - x))
+            self.move('LEFT', self.max_rotation_duration * self.constrain_left(self.x - x))
 
         if y > self.y:
-            self.move('UP', self.max_pitch_duration() * self.constrain_up(y - self.y))
+            self.move('UP', self.max_pitch_duration * self.constrain_up(y - self.y))
         elif y < self.y:
-            self.move('DOWN', self.max_pitch_duration() * self.constrain_down(self.y - y))
+            self.move('DOWN', self.max_pitch_duration * self.constrain_down(self.y - y))
 
         self.x = min(1, max(0, x))
         self.y = min(1, max(0, y))
@@ -126,7 +129,7 @@ class Rocket(object):
         if led:
             self.led(True)
 
-        count = min(self.max_shots(), max(1, count))
+        count = min(self.max_shots, max(1, count))
         time.sleep(0.5)
         for _ in range(count):
             self.raw_command(self.COMMANDS['FIRE'])
@@ -136,7 +139,7 @@ class Rocket(object):
             self.led(False)
 
     def park(self):
-        self.move('DOWN', self.max_pitch_duration() * 1.2)
-        self.move('LEFT', self.max_rotation_duration() * 1.2)
+        self.move('DOWN', self.max_pitch_duration * 1.2)
+        self.move('LEFT', self.max_rotation_duration * 1.2)
         self.x = 0
         self.y = 0
