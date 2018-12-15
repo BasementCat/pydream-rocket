@@ -18,14 +18,32 @@ class Rocket(object):
         'FIRE': 0x10,
         'STOP': 0x20,
     }
-    MAX_ROTATION_DURATION = 5.5
-    MAX_PITCH_DURATION = 1.0
 
-    def __init__(self):
+    MAX_ROTATION_DURATION = {
+        'Thunder': 6,
+        'Original': 15.75,
+    }
+
+    MAX_PITCH_DURATION = {
+        'Thunder': 0.65,
+        'Original': 3.05,
+    }
+
+    MAX_SHOTS = {
+        'Thunder': 4,
+        'Original': 3
+    }
+
+    def __init__(self, calibrate_x=None, calibrate_y=None):
         self.device = None
         self.device_type = None
         self.x = None
         self.y = None
+
+        # Allow the invoke to specify their own MAX_* values
+
+        self.calibrate_x = calibrate_x
+        self.calibrate_y = calibrate_y
 
         # Tested only with the Cheeky Dream Thunder
         # and original USB Launcher
@@ -41,18 +59,25 @@ class Rocket(object):
         else:
             self.device_type = 'Thunder'
 
-        
-
         # On Linux we need to detach usb HID first
         if platform.system() == 'Linux':
             try:
                 self.device.detach_kernel_driver(0)
-            except Exception, e:
+            except Exception as e:
                 pass # already unregistered    
 
         self.device.set_configuration()
 
         self.park()
+
+    def max_rotation_duration(self):
+        return self.calibrate_x or self.MAX_ROTATION_DURATION[self.device_type]
+
+    def max_pitch_duration(self):
+        return self.calibrate_y or self.MAX_PITCH_DURATION[self.device_type]
+
+    def max_shots(self):
+        return self.MAX_SHOTS[self.device_type]
 
     def raw_command(self, cmd):
         if self.device_type == 'Thunder':
@@ -71,25 +96,37 @@ class Rocket(object):
         time.sleep(duration)
         self.raw_command(self.COMMANDS['STOP'])
 
+    def constrain_left(self, val):
+        return max(0, min(val, self.x))
+
+    def constrain_right(self, val):
+        return max(0, min(val, 1.0 - self.x))
+
+    def constrain_up(self, val):
+        return max(0, min(val, 1.0 - self.y))
+
+    def constrain_down(self, val):
+        return max(0, min(val, self.y))
+
     def move_to(self, x, y):
         if x > self.x:
-            self.move('RIGHT', self.MAX_ROTATION_DURATION * (x - self.x))
+            self.move('RIGHT', self.max_rotation_duration() * self.constrain_right(x - self.x))
         elif x < self.x:
-            self.move('LEFT', self.MAX_ROTATION_DURATION * (self.x - x))
+            self.move('LEFT', self.max_rotation_duration() * self.constrain_left(self.x - x))
 
         if y > self.y:
-            self.move('UP', self.MAX_ROTATION_DURATION * (y - self.y))
+            self.move('UP', self.max_pitch_duration() * self.constrain_up(y - self.y))
         elif y < self.y:
-            self.move('DOWN', self.MAX_ROTATION_DURATION * (self.y - y))
+            self.move('DOWN', self.max_pitch_duration() * self.constrain_down(self.y - y))
 
-        self.x = x
-        self.y = y
+        self.x = min(1, max(0, x))
+        self.y = min(1, max(0, y))
 
     def fire(self, count, led=True):
         if led:
             self.led(True)
 
-        count = min(4, max(1, count))
+        count = min(self.max_shots(), max(1, count))
         time.sleep(0.5)
         for _ in range(count):
             self.raw_command(self.COMMANDS['FIRE'])
@@ -99,7 +136,7 @@ class Rocket(object):
             self.led(False)
 
     def park(self):
-        self.move('DOWN', self.MAX_PITCH_DURATION * 1.2)
-        self.move('LEFT', self.MAX_ROTATION_DURATION * 1.2)
+        self.move('DOWN', self.max_pitch_duration() * 1.2)
+        self.move('LEFT', self.max_rotation_duration() * 1.2)
         self.x = 0
         self.y = 0
