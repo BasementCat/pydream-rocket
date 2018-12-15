@@ -31,7 +31,12 @@ class Rocket(object):
 
     MAX_SHOTS = {
         'Thunder': 4,
-        'Original': 3
+        'Original': 3,
+    }
+
+    LED = {
+        'Thunder': True,
+        'Original': False,
     }
 
     def __init__(self, calibrate_x=None, calibrate_y=None):
@@ -39,6 +44,7 @@ class Rocket(object):
         self.device_type = None
         self.x = None
         self.y = None
+        self.led_state = None
 
         # Allow the invoke to specify their own MAX_* values
 
@@ -68,6 +74,8 @@ class Rocket(object):
 
         self.device.set_configuration()
 
+        if self.has_led:
+            self.led(False)
         self.park()
 
     @property
@@ -82,6 +90,10 @@ class Rocket(object):
     def max_shots(self):
         return self.MAX_SHOTS[self.device_type]
 
+    @property
+    def has_led(self):
+        return self.LED[self.device_type]
+
     def raw_command(self, cmd):
         if self.device_type == 'Thunder':
             self.device.ctrl_transfer(0x21, 0x09, 0, 0, [0x02, cmd, 0x00,0x00,0x00,0x00,0x00,0x00])
@@ -89,9 +101,10 @@ class Rocket(object):
             self.device.ctrl_transfer(0x21, 0x09, 0x0200, 0, [cmd])
 
     def led(self, status):
-        if self.device_type == 'Thunder':
+        if self.has_led:
+            self.led_state = bool(status)
             self.device.ctrl_transfer(0x21, 0x09, 0, 0, [0x03, int(status), 0x00,0x00,0x00,0x00,0x00,0x00])
-        elif self.device_type == 'Original':
+        else:
             raise RocketError('There is no LED on this device')
 
     def move(self, direction, duration):
