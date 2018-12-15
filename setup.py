@@ -11,7 +11,7 @@ with open('README.md', 'r') as fp:
 
 setup(
     name='pydream_rocket',
-    version='0.1.0',
+    version='0.2.0',
     description='Control DreamCheeky USB rocket launchers',
     long_description=longdesc,
     classifiers=[
